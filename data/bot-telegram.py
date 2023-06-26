@@ -33,8 +33,8 @@ token_name = 'token.txt'
 token_dir = os.path.dirname(os.path.abspath(__file__))
 token_path = os.path.join(token_dir, token_name)
 
-# with open(token_path, "r") as f:
-    # TOKEN: Final = f.read().strip()
+with open(token_path, "r") as f:
+    TOKEN: Final = f.read().strip()
 
 BOT_USERNAME: Final = '@GlustBot'
 matrix = None
@@ -77,9 +77,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             InlineKeyboardButton("Solo uomini", callback_data="10"),
         ],
         [
-            InlineKeyboardButton("Iscritti", callback_data="11"),
-            InlineKeyboardButton("Totale voti",callback_data="12"),
+            InlineKeyboardButton("Votazioni attese", callback_data="11"),
+            InlineKeyboardButton("Iscritti", callback_data="12"),
         ],
+        [
+            InlineKeyboardButton("Totale voti",callback_data="13"),
+        ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -114,8 +117,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     elif opzione == 10:
         await soloUomini(update, context)
     elif opzione == 11:
-        await iscritti(update, context)
+        await votazioniAttese(update, context)
     elif opzione == 12:
+        await iscritti(update, context)
+    elif opzione == 13:
         await totaliVotiCandidati(update, context)
 
 # mostra il vicitore delle elezioni - show the winner of the election
@@ -215,6 +220,10 @@ async def iscritti(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.callback_query.message.edit_text(iscritti)
 
+async def votazioniAttese(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    votazioni = "Erano attese "+(int(matrix[55,16])-int(matrix[55,15]))+" votazioni.\nHanno votato il "+matrix[56,15]+" ovvero "+matrix[55,15]
+    await update.callback_query.message.edit_text(votazioni)
+
 async def totaliVotiCandidati(update: Update, context: ContextTypes.DEFAULT_TYPE):
     totale = matrix[0,1]+ "ha preso "+matrix[55,1]+" votazioni.\n"+matrix[0,3]+"ha avuto "+matrix[55,3]+" votazioni.\n"+matrix[0,5]+" ha avuto "+matrix[55,5]+" votazioni."
     await update.callback_query.message.edit_text(totale)
@@ -254,7 +263,7 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Run the program
 if __name__ == '__main__':
     load_data()
-    TOKEN = "5819210026:AAECJTbhz0RGHL-l2W4l29yqgmLNIlsWzys"
+    
     app = Application.builder().token(TOKEN).build()
 
     # Commands
