@@ -33,8 +33,8 @@ token_name = 'token.txt'
 token_dir = os.path.dirname(os.path.abspath(__file__))
 token_path = os.path.join(token_dir, token_name)
 
-with open(token_path, "r") as f:
-    TOKEN: Final = f.read().strip()
+# with open(token_path, "r") as f:
+    # TOKEN: Final = f.read().strip()
 
 BOT_USERNAME: Final = '@GlustBot'
 matrix = None
@@ -51,7 +51,7 @@ def load_data():
         print("File CSV non trovato.")
         matrix = np.array([])
 
-# metod 
+###########################################################################################################################################
 
 # mostra in chat i bottoni - show in the chat the botton
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -77,11 +77,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             InlineKeyboardButton("Solo uomini", callback_data="10"),
         ],
         [
-            InlineKeyboardButton("Votazioni attese", callback_data="11"),
-            InlineKeyboardButton("Iscritti", callback_data="12"),
-        ],
-        [
-            InlineKeyboardButton("Totale voti",callback_data="13"),
+            InlineKeyboardButton("Iscritti", callback_data="11"),
+            InlineKeyboardButton("Totale voti",callback_data="12"),
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -105,7 +102,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     elif opzione == 4:
         await candidati(update, context)
     elif opzione == 5:
-        await orientamento_Politico(update, context)
+        await orientamentoPolitico(update, context)
     elif opzione == 6:
         await Vincitore(update, context)
     elif opzione == 7:
@@ -117,10 +114,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     elif opzione == 10:
         await soloUomini(update, context)
     elif opzione == 11:
-        await votazioniAttese(update, context)
-    elif opzione == 12:
         await iscritti(update, context)
-    elif opzione == 13:
+    elif opzione == 12:
         await totaliVotiCandidati(update, context)
 
 # mostra il vicitore delle elezioni - show the winner of the election
@@ -136,6 +131,22 @@ async def Vincitore(update: Update, context: ContextTypes.DEFAULT_TYPE):
         popolazione = "Ha vinto "+matrix[0,5]+" con "+matrix[55,5]+" votazioni"
 
     await update.callback_query.message.edit_text(popolazione)
+async def orientamentoPolitico(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    i=0
+    orientamento = ""
+    while i< 55:
+        if(i%2!=0):
+            if(matrix[i,1] < matrix[i,3] and matrix[i,1] < matrix[i,5]):
+                orientamento += "Nella sezione "+matrix[i,0]+" c'è una maggioranza per il candidato civico\n"
+            elif(matrix[i,1] < matrix[i,3] and matrix[i,0] < matrix[i,5]):
+                orientamento += "Nella sezione "+matrix[i,0]+" c'è una maggioranza di centrosinitra\n"
+            else:
+                orientamento += "Nella sezione "+matrix[i,0]+" c'è una maggioranza di centrodestra\n"
+        i+=1
+    await update.callback_query.message.edit_text(orientamento)
+
+
+
 
 # mosta i risultati delle elezioni - show the result of the election 
 async def datiElezioniSezioni(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -145,10 +156,10 @@ async def datiElezioniSezioni(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     i = 0
 
-    orientamento = "l'orientamento politico verrà presentato in questa disposizione\nSezione: e il numero di voti che anno preso i candidati "+matrix[0, 1] +", "+ matrix [0,3]+" e "+ matrix[0,5]+"\n"
+    orientamento = "l'orientamento politico verrà presentato in questa disposizione\nSezione; e il numero di voti che anno preso "+matrix[0, 1] +" "+ matrix [0,3]+" "+ matrix[0,5]+"\n"
     while i < 55:
         if(i%2 != 0):
-            orientamento = orientamento+"Sezione: "+matrix[i,0]+" | "+matrix[i,1]+" | "+matrix[i,3]+" | "+matrix[i,5]+"\n"
+            orientamento += "Sezione: "+matrix[i,0]+" | "+matrix[i,1]+" | "+matrix[i,3]+" | "+matrix[i,5]+"\n"
         i+=1
 
     await update.callback_query.message.edit_text(orientamento)
@@ -160,8 +171,10 @@ async def astenuti(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.callback_query.message.edit_text(chat_id=update.effective_chat.id, text="Dati non disponibili.")
         return
     
+    totaleAstenuti = matrix[55, 9]
+    
     await update.callback_query.message.edit_text("Nelle elezioni di Villafranca i cittadini che hanno deciso di non andare al seggio sono stati: "
-                                     + matrix[55, 9] )# totale astenuti 
+                                     + totaleAstenuti)
 
 # mostra le liste dei candidati - show the list of candidate
 async def liste(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -169,63 +182,52 @@ async def liste(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.callback_query.message.edit_text(chat_id=update.effective_chat.id, text="Dati non disponibili.")
         return
     
-    liste = f"{matrix[0, 2]}\n{matrix [0, 4]}\n{matrix[0,6]}"
+    liste = f"{matrix[0, 2]}\n{matrix [0, 4]}\n{matrix[0, 6]}"
     await update.callback_query.message.edit_text(liste)
 
-# mostra chi ha vinto le elezioni - show the winner of the election
-async def orientamento_Politico(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    popolazione #popolazione più di destra o di sinista
-
-    if(matrix[55,1] < matrix[55,3] and matrix[55,1] < matrix[55,5]):
-        popolazione = "Ha vinto "+matrix[55,1]
-    elif(matrix[55,1] < matrix[55,3] and matrix[55,1] < matrix[55,5]):
-        popolazione = "Ha vinto "+matrix[55,3]
-    else:
-        popolazione = "Ha vinto "+matrix[55,5]
-    await update.callback_query.message.edit_text(popolazione)
 
 async def soloDonne(update: Update, context: ContextTypes.DEFAULT_TYPE):
     donne = ""
-    
-    print("arrivato!!")
-    
-    for var in range(1,55,2):
-        donne += "Sezione: "+ matrix[var,0] +" votazioni: "+ matrix[var,14] +"\n"
-        
-    print("finito!!\ndonne: "+donne)
+    i = 0
+    while i < 55:
+        if(i % 2 != 0):
+            donne += "Sezione: "+matrix[i,0]+" votazioni: "+matrix[i,14]+"\n"
+        i+=1
     
     await update.callback_query.message.edit_text(donne)
 
 async def soloUomini(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uomini = ""
-
-    for var in range(1,55,2):
-        uomini += "Sezioni: "+matrix[var,0]+" votazioni: "+matrix[var,13]+"\n"
+    i = 0
     
+    while i < 55:
+        if(i%2 != 0):
+            uomini += "Sezioni: "+matrix[i,0]+" votazioni: "+matrix[i,13]+"\n"
+        i+=1
     await update.callback_query.message.edit_text(uomini)
 
 async def votanti(update: Update, context: ContextTypes.DEFAULT_TYPE):
     votanti = ""
+    i = 0
 
-    for var in range(1,55,2):
-            votanti+="Sezione: "+matrix[var,0]+" votanti: "+matrix[var,15]+"\n"
-
+    while i<55:
+        if(i%2!=0):
+            votanti+="Sezione: "+matrix[i,0]+" votanti: "+matrix[i,14]+"\n"
+        i+=1
     await update.callback_query.message.edit_text(votanti)
 
 async def iscritti(update: Update, context: ContextTypes.DEFAULT_TYPE):
     iscritti = ""
+    i = 0
 
-    for var in range(1,55,2):
-            iscritti+="Sezioni: "+matrix[var,0]+" iscritti: "+matrix[var,16]+"\n"
-    
+    while i<55:
+        if(i%2!=0):
+            iscritti+= "Sezioni: "+matrix[i,0]+" iscritti:"+matrix[i,15]+"\n"
+        i+=1
     await update.callback_query.message.edit_text(iscritti)
 
-async def votazioniAttese(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    votazioni = "Erano attese "+(int(matrix[55,16])-int(matrix[55,15]))+" votazioni.\nHanno votato il "+matrix[56,15]+" ovvero "+matrix[55,15]
-    await update.callback_query.message.edit_text(votazioni)
-
 async def totaliVotiCandidati(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    totale = matrix[0,1]+ "ha preso "+matrix[55,1]+" votazioni.\n"+matrix[0,3]+"ha avuto "+matrix[55,3]+" votazioni.\n"+matrix[0,5]+" ha avuto "+matrix[55,5]+" votazioni."
+    totale = matrix[0,1]+ "ha preso "+matrix[56,1]+" votazioni.\n"+matrix[0,3]+"ha preso "+matrix[56,3]+" votazioni.\n"+matrix[0,5]+" ha preso "+matrix[56,5]+" votazioni."
     await update.callback_query.message.edit_text(totale)
 
 # mostra i candidati
@@ -233,22 +235,22 @@ async def candidati(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if matrix is None or matrix.size == 0:
         await update.callback_query.message.edit_text(chat_id=update.effective_chat.id, text="Dati non disponibili.")
         return
-    lista_sindaci = f"{matrix[0, 1]}\n{matrix [0,3]}\n{matrix[0,5]}"
+    lista_sindaci = f"{matrix[0,1]}\n{matrix [0,3]}\n{matrix[0,5]}"
     await update.callback_query.message.edit_text(lista_sindaci)
 
 # mostra le informazioni riguardanti i comandi eseguibili
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info_text = "Benvenuto! Questo è un bot per le elezioni di Villafranca.\n\n" \
                 "Ecco i comandi disponibili:\n" \
-                "/Astenuti - Mostra il numero di astenuti\n" \
-                "/start - Avvia il bot\n" \
-                "/info - Mostra le informazioni sul bot e i comandi disponibili\n" \
-                "/Candidati - Mostra i candidati sindaci\n" \
-                "/astenuti - Mostra il numero di astenuti\n" \
-                "/mostraVincitore - Mostra il vincitore delle elezioni\n" \
-                "/liste - Mostra le liste\n" \
-                "/DoveVotare - Mostra i luoghi di voto\n" \
-                "/stop - Arresta il bot"
+                "Astenuti: Mostra il numero di astenuti\n" \
+                "/start: - Avvia il bot\n" \
+                "info: Mostra le informazioni sul bot e i comandi disponibili\n" \
+                "Candidati: Mostra i candidati sindaci\n" \
+                "Astenuti: Mostra il numero di astenuti\n" \
+                "Vincitore: Mostra il vincitore delle elezioni\n" \
+                "liste: Mostra le liste\n" \
+                "DatiSezioniElezione: mostra le votazioni che hanno preso ogni candidato in ogni sezione\n" \
+                "orientamento politico: mostra per ogni sezione la maggioranza politica"
     await update.callback_query.message.edit_text(info_text)
 
 
@@ -263,7 +265,7 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Run the program
 if __name__ == '__main__':
     load_data()
-    
+    TOKEN = "5819210026:AAECJTbhz0RGHL-l2W4l29yqgmLNIlsWzys"
     app = Application.builder().token(TOKEN).build()
 
     # Commands
